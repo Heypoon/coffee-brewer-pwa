@@ -3,92 +3,237 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#d97706" />
+  <meta name="theme-color" content="#0f0d0b" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>PourOver Pro 手沖咖啡計時器</title>
+  <title>BrewMaster PRO - 淺中焙手沖 & Hario Switch 互動計算器</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png" />
   <style>
     :root {
-      --bg: #121212;
-      --card: #1e1e1e;
-      --border: #333;
-      --accent: #d97706;
-      --text: #f3f4f6;
+      --bg: #0f0d0b;
+      --card: #181411;
+      --card-inner: #211c17;
+      --border: #2e261f;
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.18);
+      --text: #f9fafb;
       --muted: #9ca3af;
       --open: #10b981;
       --closed: #ef4444;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 60px; }
-    h1 { font-size: 1.35rem; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-    label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 6px; }
-    select, input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #262626; color: var(--text); font-size: 1rem; margin-bottom: 12px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .valve-badge { text-align: center; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 1.3rem; margin-bottom: 12px; transition: 0.2s; }
-    .valve-open { background: rgba(16, 185, 129, 0.2); border: 2px solid var(--open); color: #34d399; }
-    .valve-closed { background: rgba(239, 68, 68, 0.2); border: 2px solid var(--closed); color: #f87171; }
-    .timer-display { font-size: 3.6rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; margin: 8px 0; }
-    .step-box { background: #262626; border-left: 4px solid var(--accent); padding: 12px; border-radius: 8px; margin-bottom: 12px; }
-    .btn-row { display: flex; gap: 10px; }
-    button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-sec { background: #374151; color: #fff; }
-    .step-list { list-style: none; font-size: 0.9rem; }
-    .step-list li { padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
-    .step-list li.active-step { color: var(--accent); font-weight: 700; }
-    .sub-info { font-size: 0.82rem; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang HK", sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); max-width: 560px; margin: 0 auto; padding: 16px 14px 120px; line-height: 1.45; }
+
+    /* Top Header */
+    .header { border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 16px; }
+    .brand-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .logo-box { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #f59e0b, #b45309); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35); flex-shrink: 0; }
+    .brand-title { font-size: 1.35rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .pro-badge { font-size: 0.7rem; font-weight: 800; color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.12); padding: 2px 7px; border-radius: 6px; letter-spacing: 0.5px; }
+    .brand-sub { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+
+    .Action-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+    .icon-btn { background: var(--card-inner); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s; }
+    .icon-btn.active { border-color: var(--amber); background: var(--amber-glow); color: var(--amber); }
+    .badge-count { background: var(--amber); color: #000; font-weight: 800; font-size: 0.72rem; padding: 1px 6px; border-radius: 10px; }
+
+    /* Dripper Selector (3 Big Tabs) */
+    .dripper-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: var(--card); padding: 8px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 16px; }
+    .dripper-tab { border: none; background: transparent; color: var(--text); padding: 14px 8px; border-radius: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 0.9rem; transition: 0.2s; }
+    .dripper-tab svg { width: 24px; height: 24px; }
+    .dripper-tab.active { background: var(--amber); color: #111; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3); }
+
+    /* Section Card */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 16px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .card-title { font-size: 0.92rem; font-weight: 700; color: #e5e7eb; display: flex; align-items: center; gap: 6px; }
+    .tag-pill { font-size: 0.74rem; font-weight: 700; color: var(--amber); background: var(--amber-glow); border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 9px; border-radius: 12px; }
+
+    /* Recipe Cards List */
+    .recipe-list { display: flex; flex-direction: column; gap: 10px; }
+    .recipe-item { background: var(--card-inner); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; }
+    .recipe-item.active { border-color: var(--amber); background: rgba(245, 158, 11, 0.08); }
+    .recipe-num { width: 28px; height: 28px; border-radius: 8px; background: #2d2620; color: var(--muted); font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .recipe-item.active .recipe-num { background: var(--amber); color: #111; }
+    .recipe-info { flex: 1; min-width: 0; }
+    .recipe-name { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .recipe-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .recipe-item.active .recipe-sub { color: #fbbf24; }
+    .recipe-arrow { color: var(--muted); font-weight: 700; }
+
+    /* Sub-mode buttons (Devil recipe) */
+    .mode-switch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+    .mode-btn { padding: 8px; border-radius: 10px; border: 1px solid var(--border); background: var(--card-inner); color: var(--muted); font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+    .mode-btn.active { border-color: var(--amber); color: var(--amber); background: var(--amber-glow); }
+
+    /* Parameters & Sliders */
+    .param-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+    .param-box { background: var(--card-inner); border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; }
+    .param-label { font-size: 0.74rem; color: var(--muted); }
+    .param-val { font-size: 1.2rem; font-weight: 800; color: var(--amber); margin-top: 2px; }
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field label { font-size: 0.78rem; color: var(--muted); display: block; margin-bottom: 4px; }
+    .field input { width: 100%; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--card-inner); color: var(--text); font-size: 0.95rem; font-weight: 700; }
+    .cool-helper { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); font-size: 0.8rem; color: #93c5fd; display: none; }
+
+    /* Big Valve Indicator & Step Timeline */
+    .valve-banner { padding: 14px; border-radius: 14px; font-weight: 800; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transition: 0.25s; }
+    .valve-open { background: rgba(16, 185, 129, 0.16); border: 2px solid var(--open); color: #34d399; }
+    .valve-closed { background: rgba(239, 68, 68, 0.18); border: 2px solid var(--closed); color: #f87171; }
+    .step-timeline { display: flex; flex-direction: column; gap: 8px; }
+    .step-row { background: var(--card-inner); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .step-row.current { border-color: var(--amber); background: var(--amber-glow); }
+    .step-time { font-weight: 800; font-size: 0.88rem; color: var(--amber); min-width: 44px; }
+    .step-desc { flex: 1; font-size: 0.86rem; }
+    .step-target { font-weight: 800; font-size: 0.92rem; color: #fff; background: #2d2620; padding: 4px 9px; border-radius: 8px; }
+
+    /* Sticky Bottom Bar */
+    .bottom-bar { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); max-width: 536px; background: rgba(24, 20, 17, 0.95); backdrop-filter: blur(12px); border: 1px solid #3a3026; border-radius: 20px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.65); z-index: 50; }
+    .mini-status { display: flex; align-items: center; gap: 10px; }
+    .status-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--open); box-shadow: 0 0 10px var(--open); }
+    .status-dot.closed { background: var(--closed); box-shadow: 0 0 10px var(--closed); }
+    .mini-time { font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .mini-target { font-size: 0.76rem; color: #38bdf8; font-weight: 700; }
+    .ctrl-btns { display: flex; align-items: center; gap: 8px; }
+    .round-btn { width: 44px; height: 44px; border-radius: 13px; border: 1px solid var(--border); background: var(--card-inner); color: var(--text); font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .main-play-btn { background: var(--amber); color: #111; border: none; padding: 0 18px; height: 48px; border-radius: 14px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+    /* Modal for Notes */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
+    .modal.show { display: flex; }
+    .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; width: 100%; max-width: 460px; padding: 18px; max-height: 85vh; overflow-y: auto; }
+    .note-item { background: var(--card-inner); border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-top: 8px; font-size: 0.82rem; }
   </style>
 </head>
 <body>
-  <h1>
-    <span>☕ PourOver Pro</span>
-    <button id="wakeBtn" style="flex:0; padding:6px 12px; font-size:0.8rem;" class="btn-sec">⚡ 防熄芒: 關</button>
-  </h1>
 
-  <div class="card">
-    <label>選擇沖煮配方（淺中焙專用）</label>
-    <select id="recipeSelect">
-      <option value="devil">Switch - 粕谷哲「惡魔沖法」(前滴後浸/極甜)</option>
-      <option value="devil_acid">Switch - 惡魔沖法 (80+40 偏明亮果酸)</option>
-      <option value="devil_sweet">Switch - 惡魔沖法 (40+80 偏濃郁甜感)</option>
-      <option value="half">Switch - Coffee Chronicler 50/50 對半混合</option>
-      <option value="bloom">Switch - 關閥悶蒸 + 多段滴濾 (高萃取)</option>
-      <option value="waterfirst">Switch - 先水後粉全浸泡 (防細粉塞濾紙)</option>
-      <option value="iced">Switch - 急冷冰手沖 (含冰塊比例)</option>
-      <option value="kadou">Kadou 星芒濾杯 - 淺中焙三刀流</option>
-      <option value="v60">Hario V60 - 4:6 法則標準版</option>
-    </select>
-
-    <div class="grid-2">
-      <div>
-        <label>咖啡粉重 (g)</label>
-        <input type="number" id="coffeeGrams" value="15" min="8" max="60" />
+  <!-- Top Header -->
+  <div class="header">
+    <div class="brand-row">
+      <div class="logo-box">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
       </div>
       <div>
-        <label>粉水比 (1 : X)</label>
-        <input type="number" id="ratioInput" value="16" step="0.5" min="10" max="20" />
+        <div class="brand-title">BrewMaster <span class="pro-badge">PRO</span></div>
+        <div class="brand-sub">淺中焙手沖 & Hario Switch 互動計算器</div>
       </div>
     </div>
-    <div id="recipeSummary" class="sub-info"></div>
-  </div>
-
-  <div class="card">
-    <div id="valveStatus" class="valve-badge valve-open">🟢 開閥 (OPEN)</div>
-    <div id="timerDisplay" class="timer-display">00:00</div>
-    <div id="currentInstruction" class="step-box">按「開始計時」啟動手沖引導</div>
-
-    <div class="btn-row">
-      <button id="startBtn" class="btn-primary">開始 / 暫停</button>
-      <button id="resetBtn" class="btn-sec">重設</button>
+    <div class="Action-bar">
+      <button id="wakeBtn" class="icon-btn" title="防止手機螢幕熄滅">📱 防熄芒</button>
+      <button id="soundBtn" class="icon-btn active" title="切換提示音效">🔊 音效</button>
+      <button id="noteBtn" class="icon-btn">📖 筆記 <span id="noteCount" class="badge-count">0</span></button>
     </div>
   </div>
 
+  <!-- 3 Big Dripper Selector Buttons -->
+  <div class="dripper-tabs">
+    <button class="dripper-tab active" data-dripper="switch">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="15" cy="12" r="2.5" fill="currentColor"/></svg>
+      <span>Hario Switch</span>
+    </button>
+    <button class="dripper-tab" data-dripper="kadou">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"/></svg>
+      <span>星芒濾杯</span>
+    </button>
+    <button class="dripper-tab" data-dripper="v60">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="3 5 21 5 14 15 14 20 10 20 10 15 3 5"/></svg>
+      <span>Hario V60</span>
+    </button>
+  </div>
+
+  <!-- Recipe Selection List -->
   <div class="card">
-    <label>分段注水時間軸</label>
-    <ul id="stepList" class="step-list"></ul>
+    <div class="card-header">
+      <div class="card-title">☰ 選擇淺中焙沖煮配方</div>
+      <span id="recipeTag" class="tag-pill">浸滴混合 + 降溫</span>
+    </div>
+    <div id="recipeList" class="recipe-list"></div>
+
+    <!-- Devil Sub-modes -->
+    <div id="devilSubModes" class="mode-switch">
+      <button class="mode-btn active" data-devil="std">標準平衡 (60+60)</button>
+      <button class="mode-btn" data-devil="acid">明亮果酸 (80+40)</button>
+      <button class="mode-btn" data-devil="sweet">極致甜感 (40+80)</button>
+    </div>
+  </div>
+
+  <!-- Calculator & Parameters -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⚖️ 粉水比例與水溫參數</div>
+      <span id="tempBadge" class="tag-pill">92°C → 70°C</span>
+    </div>
+    <div class="param-grid">
+      <div class="param-box">
+        <div class="param-label">咖啡粉量</div>
+        <div id="dispCoffee" class="param-val">20g</div>
+      </div>
+      <div class="param-box">
+        <div class="param-label">粉水比例</div>
+        <div id="dispRatio" class="param-val">1:14</div>
+      </div>
+      <div class="param-box">
+        <div class="param-label">目標總水量</div>
+        <div id="dispWater" class="param-val">280g</div>
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="field">
+        <label>調整粉重 (g)</label>
+        <input type="number" id="coffeeInput" value="20" min="8" max="60" step="1" />
+      </div>
+      <div class="field">
+        <label>調整比例 (1 : X)</label>
+        <input type="number" id="ratioInput" value="14" min="10" max="20" step="0.5" />
+      </div>
+    </div>
+    <div id="coolHelper" class="cool-helper"></div>
+  </div>
+
+  <!-- Interactive Valve & Step Timeline -->
+  <div class="card">
+    <div id="valveBanner" class="valve-banner valve-open">
+      <span id="valveText">🟢 開閥滴濾 (OPEN)</span>
+      <span id="stepCounter" style="font-size:0.82rem; opacity:0.85;">步驟 1 / 4</span>
+    </div>
+    <div id="stepTimeline" class="step-timeline"></div>
+  </div>
+
+  <!-- Sticky Bottom Timer Bar -->
+  <div class="bottom-bar">
+    <div class="mini-status">
+      <div id="miniDot" class="status-dot"></div>
+      <div>
+        <div id="miniTime" class="mini-time">00:00</div>
+        <div id="miniTarget" class="mini-target">目標 60g</div>
+      </div>
+    </div>
+    <div class="ctrl-btns">
+      <button id="resetBtn" class="round-btn" title="重設">↺</button>
+      <button id="playBtn" class="main-play-btn">▶ 開始計時</button>
+      <button id="nextStepBtn" class="round-btn" title="跳至下一步">⏭</button>
+    </div>
+  </div>
+
+  <!-- Brew Notes Modal -->
+  <div id="noteModal" class="modal">
+    <div class="modal-box">
+      <div class="card-header">
+        <div class="card-title">📖 淺中焙手沖筆記簿</div>
+        <button id="closeModalBtn" class="icon-btn">✕ 關閉</button>
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label>咖啡豆名稱 / 產區（如：衣索比亞 水洗 耶加雪菲）</label>
+        <input type="text" id="beanInput" placeholder="輸入豆名..." />
+      </div>
+      <div class="field" style="margin-bottom:8px;">
+        <label>磨豆機刻度 & 風味筆記</label>
+        <input type="text" id="tasteInput" placeholder="例：刻度 24格，白花香突出、尾韻甜..." />
+      </div>
+      <button id="saveNoteBtn" class="main-play-btn" style="width:100%; justify-content:center; margin-bottom:10px;">💾 儲存當前沖煮紀錄</button>
+      <div id="noteList"></div>
+    </div>
   </div>
 
   <script>
@@ -98,104 +243,155 @@
       });
     }
 
-    const RECIPES = {
-      devil: {
-        ratio: 14, temp: "前段 92°C / 1:15降溫至 70°C",
-        steps: (c, w) => [
-          { t: 0, valve: "OPEN", target: Math.round(w * 0.214), text: "92°C 開閥悶蒸" },
-          { t: 30, valve: "OPEN", target: Math.round(w * 0.428), text: "92°C 第二段滴濾注水" },
-          { t: 75, valve: "CLOSED", target: w, text: "關閥！兌室溫水降至 70°C 注滿浸泡" },
-          { t: 105, valve: "OPEN", target: w, text: "開閥放水，等待流乾 (約 3:00 完成)" }
-        ]
-      },
-      devil_acid: {
-        ratio: 14, temp: "前段 92°C / 1:15降溫至 70°C",
-        steps: (c, w) => [
-          { t: 0, valve: "OPEN", target: Math.round(w * 0.285), text: "92°C 開閥大水悶蒸 (突出果酸)" },
-          { t: 30, valve: "OPEN", target: Math.round(w * 0.428), text: "92°C 第二段補水" },
-          { t: 75, valve: "CLOSED", target: w, text: "關閥！70°C 溫水注滿浸泡" },
-          { t: 105, valve: "OPEN", target: w, text: "開閥流乾" }
-        ]
-      },
-      devil_sweet: {
-        ratio: 14, temp: "前段 92°C / 1:15降溫至 70°C",
-        steps: (c, w) => [
-          { t: 0, valve: "OPEN", target: Math.round(w * 0.143), text: "92°C 開閥小水悶蒸 (突出甜感)" },
-          { t: 30, valve: "OPEN", target: Math.round(w * 0.428), text: "92°C 第二段大水注水" },
-          { t: 75, valve: "CLOSED", target: w, text: "關閥！70°C 溫水注滿浸泡" },
-          { t: 105, valve: "OPEN", target: w, text: "開閥流乾" }
-        ]
-      },
-      half: {
-        ratio: 16, temp: "93°C",
-        steps: (c, w) => [
-          { t: 0, valve: "OPEN", target: Math.round(w * 0.5), text: "開閥直接注水一半，免獨立悶蒸" },
-          { t: 45, valve: "CLOSED", target: w, text: "關閥！注入剩餘一半水量浸泡" },
-          { t: 120, valve: "OPEN", target: w, text: "開閥放水，約 2:45 流乾" }
-        ]
-      },
-      bloom: {
-        ratio: 15.5, temp: "93°C",
-        steps: (c, w) => [
-          { t: 0, valve: "CLOSED", target: Math.round(c * 3), text: "關閥悶蒸，輕搖確保乾粉全濕" },
-          { t: 40, valve: "OPEN", target: Math.round(w * 0.6), text: "開閥放水並注入第一段水" },
-          { t: 85, valve: "OPEN", target: w, text: "保持開閥，注入尾段水至總水量" }
-        ]
-      },
-      waterfirst: {
-        ratio: 16, temp: "94°C",
-        steps: (c, w) => [
-          { t: 0, valve: "CLOSED", target: w, text: "關閥！先注入全部熱水（未落粉）" },
-          { t: 15, valve: "CLOSED", target: w, text: "倒入咖啡粉，輕輕壓濕攪拌浸泡" },
-          { t: 120, valve: "CLOSED", target: w, text: "表面輕攪一下讓粉沉底" },
-          { t: 135, valve: "OPEN", target: w, text: "開閥快速放水（防細粉塞濾紙）" }
-        ]
-      },
-      iced: {
-        ratio: 15, temp: "93°C (下壺放冰)",
-        steps: (c, w) => {
-          const ice = Math.round(w * 0.35);
-          const hot = w - ice;
-          return [
-            { t: 0, valve: "OPEN", target: Math.round(hot * 0.5), text: `下壺先放 ${ice}g 冰！開閥注一半熱水` },
-            { t: 40, valve: "CLOSED", target: hot, text: `關閥！注入剩餘熱水至 ${hot}g 浸泡` },
-            { t: 100, valve: "OPEN", target: hot, text: "開閥落冰急冷，搖勻即可飲用" }
-          ];
+    const ALL_RECIPES = {
+      switch: [
+        {
+          id: 'devil',
+          name: '粕谷哲「惡魔沖法」(Devil Recipe)',
+          sub: '建議 20g 粉 · 1:14 · 極致甜感 · 零苦澀',
+          tag: '浸滴混合 + 降溫',
+          coffee: 20, ratio: 14, temp: '92°C → 70°C',
+          coolHelper: true,
+          steps: (c, w, mode) => {
+            const p1 = mode === 'acid' ? Math.round(w * 0.285) : mode === 'sweet' ? Math.round(w * 0.143) : Math.round(w * 0.214);
+            const p2 = Math.round(w * 0.428);
+            return [
+              { t: 0, valve: 'OPEN', target: p1, desc: '92°C 開閥悶蒸，由中心向外繞圈' },
+              { t: 30, valve: 'OPEN', target: p2, desc: '92°C 第二段滴濾注水，釋放明亮花果香' },
+              { t: 75, valve: 'CLOSED', target: w, desc: '🔴 關閥！兌入室溫水降至 70°C 一次注滿浸泡' },
+              { t: 105, valve: 'OPEN', target: w, desc: '🟢 開閥放水流乾（約 3:00 完成）' }
+            ];
+          }
+        },
+        {
+          id: 'chronicler',
+          name: 'Coffee Chronicler「50/50 對半混合法」',
+          sub: '建議 15g 粉 · 1:16 · 最簡單穩定 · 日常首選',
+          tag: '50/50 浸滴對半',
+          coffee: 15, ratio: 16, temp: '93°C',
+          steps: (c, w) => [
+            { t: 0, valve: 'OPEN', target: Math.round(w * 0.5), desc: '🟢 開閥直接注水一半，免獨立悶蒸' },
+            { t: 45, valve: 'CLOSED', target: w, desc: '🔴 關閥！大水注入剩餘一半水量浸泡' },
+            { t: 120, valve: 'OPEN', target: w, desc: '🟢 開閥放水，約 2:45 流乾' }
+          ]
+        },
+        {
+          id: 'bloom_drip',
+          name: '「關閥悶蒸 + 多段滴濾」浸泡式悶蒸',
+          sub: '建議 15g 粉 · 1:16 · 高海拔淺焙硬豆剋星',
+          tag: '浸泡悶蒸 + 滴濾',
+          coffee: 15, ratio: 16, temp: '93°C',
+          steps: (c, w) => [
+            { t: 0, valve: 'CLOSED', target: Math.round(c * 3), desc: '🔴 關閥悶蒸！輕搖濾杯確保淺焙粉 100% 濕透' },
+            { t: 40, valve: 'OPEN', target: Math.round(w * 0.6), desc: '🟢 開閥放水並分階段繞圈注水' },
+            { t: 85, valve: 'OPEN', target: w, desc: '保持開閥，注入尾段水至目標水量' }
+          ]
+        },
+        {
+          id: 'water_first',
+          name: '「先水後粉」防塞全浸泡 (Water-First)',
+          sub: '建議 15g 粉 · 1:16 · 針對極多細粉衣索比亞豆',
+          tag: '防細粉塞濾紙',
+          coffee: 15, ratio: 16, temp: '94°C',
+          steps: (c, w) => [
+            { t: 0, valve: 'CLOSED', target: w, desc: '🔴 關閥！未落粉前先注入全部熱水' },
+            { t: 15, valve: 'CLOSED', target: w, desc: '倒入咖啡粉，用匙羹輕輕由上往下壓濕攪拌' },
+            { t: 120, valve: 'CLOSED', target: w, desc: '表面輕輕畫圈攪拌一下，讓浮粉沉底' },
+            { t: 135, valve: 'OPEN', target: w, desc: '🟢 開閥快速放水（35秒內流完不塞濾紙）' }
+          ]
+        },
+        {
+          id: 'switch_iced',
+          name: 'Switch 急冷冰手沖（50/50 冰鎮版）',
+          sub: '建議 15g 粉 · 1:15 · 下壺放冰 · 冰鎮鎖香',
+          tag: '急冷冰咖啡',
+          coffee: 15, ratio: 15, temp: '93°C + 冰塊',
+          steps: (c, w) => {
+            const ice = Math.round(w * 0.35);
+            const hot = w - ice;
+            return [
+              { t: 0, valve: 'OPEN', target: Math.round(hot * 0.5), desc: `🧊 下壺先放 ${ice}g 冰！開閥注一半熱水滴濾` },
+              { t: 40, valve: 'CLOSED', target: hot, desc: `🔴 關閥！注入剩餘熱水至 ${hot}g 浸泡 1 分鐘` },
+              { t: 100, valve: 'OPEN', target: hot, desc: '🟢 開閥落冰急冷，搖勻即可飲用' }
+            ];
+          }
         }
-      },
-      kadou: {
-        ratio: 15.5, temp: "92°C–93°C (星芒濾杯)",
-        steps: (c, w) => [
-          { t: 0, valve: "OPEN", target: Math.round(c * 2.5), text: "悶蒸注水，由中心向外繞圈" },
-          { t: 35, valve: "OPEN", target: Math.round(w * 0.65), text: "第一段柔水繞圈注水，拉高水位" },
-          { t: 75, valve: "OPEN", target: w, text: "中心定點連綿注水至目標水量" }
-        ]
-      },
-      v60: {
-        ratio: 15, temp: "92°C (V60)",
-        steps: (c, w) => [
-          { t: 0, valve: "OPEN", target: Math.round(w * 0.2), text: "第一段悶蒸 (調整酸甜)" },
-          { t: 45, valve: "OPEN", target: Math.round(w * 0.4), text: "第二段注水" },
-          { t: 90, valve: "OPEN", target: Math.round(w * 0.7), text: "第三段注水 (調整濃度)" },
-          { t: 130, valve: "OPEN", target: w, text: "最後一段注水，約 2:45 流完" }
-        ]
-      }
+      ],
+      kadou: [
+        {
+          id: 'kadou_3',
+          name: 'Kadou 星芒濾杯「淺中焙三刀流」',
+          sub: '建議 15g 粉 · 1:15.5 · 高流速立體肋骨專用',
+          tag: '高香氣層次',
+          coffee: 15, ratio: 15.5, temp: '92°C–93°C',
+          steps: (c, w) => [
+            { t: 0, valve: 'OPEN', target: Math.round(c * 2.5), desc: '悶蒸注水，確保粉層均勻排氣' },
+            { t: 35, valve: 'OPEN', target: Math.round(w * 0.65), desc: '第一段穩定繞圈注水，拉高水位翻攪' },
+            { t: 75, valve: 'OPEN', target: w, desc: '中心小水柱連綿注水至總水量，約 2:10 流完' }
+          ]
+        },
+        {
+          id: 'kadou_ice',
+          name: 'Kadou 星芒濾杯「極速急冷冰手沖」',
+          sub: '建議 16g 粉 · 1:15 · 150g 熱水 + 90g 冰塊',
+          tag: '星芒急冷',
+          coffee: 16, ratio: 15, temp: '93°C + 冰塊',
+          steps: (c, w) => {
+            const ice = Math.round(w * 0.375);
+            const hot = w - ice;
+            return [
+              { t: 0, valve: 'OPEN', target: Math.round(c * 2.2), desc: `🧊 下壺放 ${ice}g 冰塊！熱水悶蒸 30 秒` },
+              { t: 30, valve: 'OPEN', target: Math.round(hot * 0.65), desc: '慢速繞圈注水，充分萃取果酸' },
+              { t: 65, valve: 'OPEN', target: hot, desc: `中心注水至 ${hot}g 熱水，落冰搖勻` }
+            ];
+          }
+        }
+      ],
+      v60: [
+        {
+          id: 'v60_46',
+          name: 'Hario V60「粕谷哲 4:6 法則」',
+          sub: '建議 20g 粉 · 1:15 · 分段控酸甜與醇厚度',
+          tag: '經典分段法',
+          coffee: 20, ratio: 15, temp: '92°C',
+          steps: (c, w) => [
+            { t: 0, valve: 'OPEN', target: Math.round(w * 0.16), desc: '第一段注水（調整花果香氣）' },
+            { t: 45, valve: 'OPEN', target: Math.round(w * 0.4), desc: '第二段注水（決定酸甜平衡）' },
+            { t: 90, valve: 'OPEN', target: Math.round(w * 0.7), desc: '第三段注水（調整咖啡濃度）' },
+            { t: 135, valve: 'OPEN', target: w, desc: '最後一段注水，約 3:00 流乾' }
+          ]
+        },
+        {
+          id: 'v60_one',
+          name: 'Hario V60「一刀流 / 兩段式明亮沖法」',
+          sub: '建議 15g 粉 · 1:16 · 乾淨度極高 · 突出茶感花香',
+          tag: '乾淨花果茶感',
+          coffee: 15, ratio: 16, temp: '93°C',
+          steps: (c, w) => [
+            { t: 0, valve: 'OPEN', target: Math.round(c * 3), desc: '悶蒸 35 秒，讓淺中焙豆完整排氣' },
+            { t: 35, valve: 'OPEN', target: Math.round(w * 0.65), desc: '穩定中水柱由內向外繞圈注水' },
+            { t: 70, valve: 'OPEN', target: w, desc: '中心定點注水至總水量，約 2:15 完成' }
+          ]
+        }
+      ]
     };
 
-    const recipeSelect = document.getElementById('recipeSelect');
-    const coffeeGrams = document.getElementById('coffeeGrams');
-    const ratioInput = document.getElementById('ratioInput');
-    const recipeSummary = document.getElementById('recipeSummary');
-    const stepList = document.getElementById('stepList');
-    const valveStatus = document.getElementById('valveStatus');
-    const timerDisplay = document.getElementById('timerDisplay');
-    const currentInstruction = document.getElementById('currentInstruction');
-
+    let currentDripper = 'switch';
+    let currentRecipeIdx = 0;
+    let devilMode = 'std';
+    let soundOn = true;
     let timer = null;
     let seconds = 0;
-    let currentSteps = [];
+    let activeSteps = [];
 
-    function beep(freq = 880, dur = 120) {
+    const recipeListEl = document.getElementById('recipeList');
+    const devilSubModesEl = document.getElementById('devilSubModes');
+    const coffeeInput = document.getElementById('coffeeInput');
+    const ratioInput = document.getElementById('ratioInput');
+    const coolHelper = document.getElementById('coolHelper');
+
+    function playBeep(freq = 880, dur = 140) {
+      if (!soundOn) return;
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
@@ -206,62 +402,136 @@
       } catch (e) {}
     }
 
-    function renderRecipe(updateRatio = false) {
-      const key = recipeSelect.value;
-      const r = RECIPES[key];
-      if (updateRatio) ratioInput.value = r.ratio;
-      const c = parseFloat(coffeeGrams.value) || 15;
-      const ratio = parseFloat(ratioInput.value) || 15;
-      const totalWater = Math.round(c * ratio);
-      currentSteps = r.steps(c, totalWater);
-
-      recipeSummary.innerHTML = `總水量：<strong>${totalWater}g</strong> ｜ 建議水溫：<strong>${r.temp}</strong>`;
-      stepList.innerHTML = currentSteps.map((s, idx) =>
-        `<li id="step-${idx}"><span>${formatTime(s.t)} [${s.valve === 'OPEN' ? '🟢開閥' : '🔴關閥'}] ${s.text}</span><strong>${s.target}g</strong></li>`
-      ).join('');
-      updateActiveStep();
-    }
-
     function formatTime(sec) {
-      const m = String(Math.floor(sec / 60)).padStart(2, '0');
-      const s = String(sec % 60).padStart(2, '0');
-      return `${m}:${s}`;
+      return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
     }
 
-    function updateActiveStep() {
-      let active = currentSteps[0];
-      let activeIdx = 0;
-      currentSteps.forEach((s, idx) => {
-        if (seconds >= s.t) { active = s; activeIdx = idx; }
-      });
+    function renderRecipeCards() {
+      const list = ALL_RECIPES[currentDripper];
+      recipeListEl.innerHTML = list.map((r, i) => `
+        <div class="recipe-item ${i === currentRecipeIdx ? 'active' : ''}" data-idx="${i}">
+          <div class="recipe-num">${i + 1}</div>
+          <div class="recipe-info">
+            <div class="recipe-name">${r.name}</div>
+            <div class="recipe-sub">${r.sub}</div>
+          </div>
+          <div class="recipe-arrow">&gt;</div>
+        </div>
+      `).join('');
 
-      document.querySelectorAll('#stepList li').forEach((el, idx) => {
-        el.classList.toggle('active-step', idx === activeIdx);
+      document.querySelectorAll('.recipe-item').forEach(el => {
+        el.addEventListener('click', () => {
+          currentRecipeIdx = parseInt(el.dataset.idx);
+          loadSelectedRecipe(true);
+          renderRecipeCards();
+        });
       });
+    }
 
-      if (active.valve === 'OPEN') {
-        valveStatus.className = 'valve-badge valve-open';
-        valveStatus.textContent = '🟢 開閥 (OPEN)';
-      } else {
-        valveStatus.className = 'valve-badge valve-closed';
-        valveStatus.textContent = '🔴 關閥 (CLOSED)';
+    function loadSelectedRecipe(resetInputs = false) {
+      const r = ALL_RECIPES[currentDripper][currentRecipeIdx];
+      document.getElementById('recipeTag').textContent = r.tag;
+      document.getElementById('tempBadge').textContent = r.temp;
+      devilSubModesEl.style.display = r.id === 'devil' ? 'grid' : 'none';
+
+      if (resetInputs) {
+        coffeeInput.value = r.coffee;
+        ratioInput.value = r.ratio;
       }
-      currentInstruction.innerHTML = `<strong>目標水量：${active.target}g</strong><br>${active.text}`;
+
+      const c = parseFloat(coffeeInput.value) || 15;
+      const ratio = parseFloat(ratioInput.value) || 15;
+      const w = Math.round(c * ratio);
+
+      document.getElementById('dispCoffee').textContent = `${c}g`;
+      document.getElementById('dispRatio').textContent = `1:${ratio}`;
+      document.getElementById('dispWater').textContent = `${w}g`;
+
+      if (r.coolHelper) {
+        const immersionWater = w - Math.round(w * 0.428);
+        const roomWater = Math.round(immersionWater * 0.35);
+        coolHelper.style.display = 'block';
+        coolHelper.innerHTML = `💡 <strong>70°C 快速降溫秘訣：</strong>完成 120g 滴濾後，手沖壺內留約 <strong>${immersionWater}g</strong> 熱水，直接兌入約 <strong>${roomWater}g 室溫水</strong>即可瞬間降至約 70°C！`;
+      } else {
+        coolHelper.style.display = 'none';
+      }
+
+      activeSteps = r.steps(c, w, devilMode);
+      updateStepUI();
     }
 
-    document.getElementById('startBtn').addEventListener('click', () => {
+    function updateStepUI() {
+      let currentIdx = 0;
+      activeSteps.forEach((s, i) => {
+        if (seconds >= s.t) currentIdx = i;
+      });
+      const cur = activeSteps[currentIdx];
+
+      document.getElementById('stepTimeline').innerHTML = activeSteps.map((s, i) => `
+        <div class="step-row ${i === currentIdx ? 'current' : ''}">
+          <div class="step-time">${formatTime(s.t)}</div>
+          <div class="step-desc">${s.desc}</div>
+          <div class="step-target">${s.target}g</div>
+        </div>
+      `).join('');
+
+      const banner = document.getElementById('valveBanner');
+      const dot = document.getElementById('miniDot');
+      if (cur.valve === 'OPEN') {
+        banner.className = 'valve-banner valve-open';
+        document.getElementById('valveText').textContent = currentDripper === 'switch' ? '🟢 開閥滴濾 (OPEN)' : '🟢 穩定滴濾注水';
+        dot.className = 'status-dot';
+      } else {
+        banner.className = 'valve-banner valve-closed';
+        document.getElementById('valveText').textContent = '🔴 關閥浸泡 (CLOSED)';
+        dot.className = 'status-dot closed';
+      }
+      document.getElementById('stepCounter').textContent = `步驟 ${currentIdx + 1} / ${activeSteps.length}`;
+      document.getElementById('miniTime').textContent = formatTime(seconds);
+      document.getElementById('miniTarget').textContent = `目標 ${cur.target}g`;
+    }
+
+    // Dripper tab clicks
+    document.querySelectorAll('.dripper-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.dripper-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentDripper = btn.dataset.dripper;
+        currentRecipeIdx = 0;
+        renderRecipeCards();
+        loadSelectedRecipe(true);
+      });
+    });
+
+    // Devil mode clicks
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        devilMode = btn.dataset.devil;
+        loadSelectedRecipe(false);
+      });
+    });
+
+    coffeeInput.addEventListener('input', () => loadSelectedRecipe(false));
+    ratioInput.addEventListener('input', () => loadSelectedRecipe(false));
+
+    // Timer controls
+    const playBtn = document.getElementById('playBtn');
+    playBtn.addEventListener('click', () => {
       if (timer) {
         clearInterval(timer);
         timer = null;
+        playBtn.textContent = '▶ 繼續計時';
       } else {
-        beep(660, 100);
+        playBeep(660, 100);
+        playBtn.textContent = '⏸ 暫停';
         timer = setInterval(() => {
           seconds++;
-          timerDisplay.textContent = formatTime(seconds);
-          currentSteps.forEach(s => {
-            if (seconds === s.t) beep(980, 220);
+          activeSteps.forEach(s => {
+            if (seconds === s.t) playBeep(980, 240);
           });
-          updateActiveStep();
+          updateStepUI();
         }, 1000);
       }
     });
@@ -270,29 +540,74 @@
       clearInterval(timer);
       timer = null;
       seconds = 0;
-      timerDisplay.textContent = "00:00";
-      updateActiveStep();
+      playBtn.textContent = '▶ 開始計時';
+      updateStepUI();
     });
 
-    recipeSelect.addEventListener('change', () => renderRecipe(true));
-    coffeeGrams.addEventListener('input', () => renderRecipe(false));
-    ratioInput.addEventListener('input', () => renderRecipe(false));
+    document.getElementById('nextStepBtn').addEventListener('click', () => {
+      const next = activeSteps.find(s => s.t > seconds);
+      if (next) {
+        seconds = next.t;
+        playBeep(880, 120);
+        updateStepUI();
+      }
+    });
+
+    // Sound & WakeLock
+    const soundBtn = document.getElementById('soundBtn');
+    soundBtn.addEventListener('click', () => {
+      soundOn = !soundOn;
+      soundBtn.classList.toggle('active', soundOn);
+      soundBtn.textContent = soundOn ? '🔊 音效' : '🔇 靜音';
+    });
 
     let wakeLock = null;
     const wakeBtn = document.getElementById('wakeBtn');
     wakeBtn.addEventListener('click', async () => {
-      if (!('wakeLock' in navigator)) return alert('此瀏覽器不支援 WakeLock');
+      if (!('wakeLock' in navigator)) return alert('此裝置不支援常亮模式');
       if (wakeLock) {
         await wakeLock.release();
         wakeLock = null;
-        wakeBtn.textContent = '⚡ 防熄芒: 關';
+        wakeBtn.classList.remove('active');
       } else {
         wakeLock = await navigator.wakeLock.request('screen');
-        wakeBtn.textContent = '⚡ 防熄芒: 開';
+        wakeBtn.classList.add('active');
       }
     });
 
-    renderRecipe(true);
+    // Notes Modal & LocalStorage
+    const noteModal = document.getElementById('noteModal');
+    const noteList = document.getElementById('noteList');
+    const noteCount = document.getElementById('noteCount');
+
+    function renderNotes() {
+      const notes = JSON.parse(localStorage.getItem('brew_notes_v1') || '[]');
+      noteCount.textContent = notes.length;
+      noteList.innerHTML = notes.map(n => `
+        <div class="note-item">
+          <strong>${n.bean}</strong> <span style="color:var(--amber);">(${n.recipe})</span><br>
+          <span style="color:var(--muted);">${n.taste} · ${n.date}</span>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('noteBtn').addEventListener('click', () => noteModal.classList.add('show'));
+    document.getElementById('closeModalBtn').addEventListener('click', () => noteModal.classList.remove('show'));
+    document.getElementById('saveNoteBtn').addEventListener('click', () => {
+      const bean = document.getElementById('beanInput').value.trim() || '未命名淺中焙豆';
+      const taste = document.getElementById('tasteInput').value.trim() || '表現均衡';
+      const rName = ALL_RECIPES[currentDripper][currentRecipeIdx].name;
+      const notes = JSON.parse(localStorage.getItem('brew_notes_v1') || '[]');
+      notes.unshift({ bean, taste, recipe: rName, date: new Date().toLocaleDateString() });
+      localStorage.setItem('brew_notes_v1', JSON.stringify(notes));
+      document.getElementById('beanInput').value = '';
+      document.getElementById('tasteInput').value = '';
+      renderNotes();
+    });
+
+    renderRecipeCards();
+    loadSelectedRecipe(true);
+    renderNotes();
   </script>
 </body>
 </html>
